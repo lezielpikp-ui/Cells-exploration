@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { sound } from '../utils/audio';
 import { Sparkles, ArrowRight, HelpCircle, Puzzle, Table, BookOpen, ShieldCheck } from 'lucide-react';
 import heroImg from '../assets/images/hero_cell_explorer_1791189995249.jpg';
@@ -20,10 +20,6 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
   onSelectMatch,
   onSelectTable,
 }) => {
-  const [heroImgFailed, setHeroImgFailed] = useState(false);
-  const [animalImgFailed, setAnimalImgFailed] = useState(false);
-  const [plantImgFailed, setPlantImgFailed] = useState(false);
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       
@@ -96,21 +92,13 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
 
           {/* Right Hero Image Card */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-md rounded-3xl overflow-hidden border-4 border-white shadow-xl rotate-1 hover:rotate-0 transition-transform duration-300 bg-amber-200">
-              {!heroImgFailed ? (
-                <img
-                  src={heroImg}
-                  alt="Cell Explorer Friendly Science Adventure"
-                  className="w-full h-auto object-cover aspect-[16/9]"
-                  referrerPolicy="no-referrer"
-                  onError={() => setHeroImgFailed(true)}
-                />
-              ) : (
-                <div className="w-full aspect-[16/9] bg-gradient-to-br from-amber-300 via-emerald-200 to-teal-300 flex flex-col items-center justify-center p-6 text-center">
-                  <span className="text-5xl mb-2">🔬🧪🌱</span>
-                  <span className="font-heading font-black text-slate-800 text-lg">Living Cell Adventure</span>
-                </div>
-              )}
+            <div className="relative w-full max-w-md rounded-3xl overflow-hidden border-4 border-white shadow-xl rotate-1 hover:rotate-0 transition-transform duration-300">
+              <img
+                src={heroImg}
+                alt="Cell Explorer Friendly Science Adventure"
+                className="w-full h-auto object-cover aspect-[16/9]"
+                referrerPolicy="no-referrer"
+              />
               <div className="absolute bottom-2 left-2 right-2 bg-white/95 backdrop-blur-xs p-2.5 rounded-2xl shadow-xs border border-amber-200 text-center">
                 <span className="text-xs font-bold text-slate-800">
                   Ready to discover the secrets of life? Jump in! 🌟
@@ -145,22 +133,13 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
             className="group bg-white rounded-3xl p-6 border-3 border-amber-200 hover:border-amber-400 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
-              <div className="relative rounded-2xl overflow-hidden mb-5 border-2 border-amber-100 aspect-[4/3] bg-amber-50 flex items-center justify-center">
-                {!animalImgFailed ? (
-                  <img
-                    src={animalCellImg}
-                    alt="Cartoon Animal Cell Diagram"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                    onError={() => setAnimalImgFailed(true)}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-amber-100 to-orange-200 flex flex-col items-center justify-center p-6 text-center">
-                    <span className="text-6xl mb-2">🐾</span>
-                    <span className="font-heading font-extrabold text-amber-950 text-xl">Animal Cell</span>
-                    <span className="text-xs text-amber-800 mt-1">Round & Flexible Shape</span>
-                  </div>
-                )}
+              <div className="relative rounded-2xl overflow-hidden mb-5 border-2 border-amber-100 aspect-[4/3] bg-amber-50">
+                <img
+                  src={animalCellImg}
+                  alt="Cartoon Animal Cell Diagram"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  referrerPolicy="no-referrer"
+                />
                 <div className="absolute top-3 left-3 bg-amber-500 text-white font-heading font-bold text-xs px-3 py-1 rounded-full shadow-xs">
                   🐾 Animal Cell
                 </div>
@@ -204,22 +183,13 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
             className="group bg-white rounded-3xl p-6 border-3 border-emerald-300 hover:border-emerald-500 shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
-              <div className="relative rounded-2xl overflow-hidden mb-5 border-2 border-emerald-100 aspect-[4/3] bg-emerald-50 flex items-center justify-center">
-                {!plantImgFailed ? (
-                  <img
-                    src={plantCellImg}
-                    alt="Cartoon Plant Cell Diagram"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                    onError={() => setPlantImgFailed(true)}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-emerald-100 to-teal-200 flex flex-col items-center justify-center p-6 text-center">
-                    <span className="text-6xl mb-2">🌱</span>
-                    <span className="font-heading font-extrabold text-emerald-950 text-xl">Plant Cell</span>
-                    <span className="text-xs text-emerald-800 mt-1">Sturdy Boxy Shape with Cell Wall</span>
-                  </div>
-                )}
+              <div className="relative rounded-2xl overflow-hidden mb-5 border-2 border-emerald-100 aspect-[4/3] bg-emerald-50">
+                <img
+                  src={plantCellImg}
+                  alt="Cartoon Plant Cell Diagram"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  referrerPolicy="no-referrer"
+                />
                 <div className="absolute top-3 left-3 bg-emerald-600 text-white font-heading font-bold text-xs px-3 py-1 rounded-full shadow-xs flex items-center gap-1">
                   <span>🌱 Plant Cell</span>
                   <span className="text-[10px] bg-emerald-700 px-1.5 py-0.2 rounded-md">Plant Only Features!</span>
