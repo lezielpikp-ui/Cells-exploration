@@ -117,7 +117,9 @@ export const QuizChallenge: React.FC<QuizChallengeProps> = ({
           <div className="mb-6">
             <div className="flex items-center justify-between text-xs font-bold text-slate-500 mb-2">
               <span>Question {currentIndex + 1} of {QUIZ_QUESTIONS.length}</span>
-              <span className="text-violet-700">Score: {score}</span>
+              <span className="text-violet-700">
+                Score: {score} / {QUIZ_QUESTIONS.length}
+              </span>
             </div>
             <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
               <div

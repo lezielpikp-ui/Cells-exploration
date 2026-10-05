@@ -2,8 +2,8 @@ import React from 'react';
 import { sound } from '../utils/audio';
 import { Sparkles, ArrowRight, HelpCircle, Puzzle, Table, BookOpen, ShieldCheck } from 'lucide-react';
 import heroImg from '../assets/images/hero_cell_explorer_1791189995249.jpg';
-import animalCellImg from '../assets/images/cartoon_animal_cell_1791190008766.jpg';
-import plantCellImg from '../assets/images/cartoon_plant_cell_1791190024244.jpg';
+import animalCellImg from '../assets/images/animal-cell.jpg'; // 👈 ADD correct path
+import plantCellImg from '../assets/images/plant-cell.jpg';   // 👈 ADD correct path
 
 interface HomeHeroProps {
   onSelectAnimal: () => void;

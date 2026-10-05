@@ -156,29 +156,11 @@ export const MatchUpGame: React.FC<MatchUpGameProps> = ({ onGoToQuiz }) => {
           </button>
         </div>
 
-        {/* Current Selection Status Bar */}
-        <div className="mb-6 p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-950 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="font-bold">Active Trio:</span>
-            <span className={`px-2 py-0.5 rounded-md font-semibold ${selectedPartId ? 'bg-amber-200 text-amber-950' : 'bg-white/60 text-slate-400'}`}>
-              {selectedPartId ? MATCH_ITEMS.find(m => m.id === selectedPartId)?.organelleName : '1. Pick Part'}
-            </span>
-            <span>➔</span>
-            <span className={`px-2 py-0.5 rounded-md font-semibold ${selectedNickId ? 'bg-amber-200 text-amber-950' : 'bg-white/60 text-slate-400'}`}>
-              {selectedNickId ? MATCH_ITEMS.find(m => m.id === selectedNickId)?.nickname : '2. Pick Nickname'}
-            </span>
-            <span>➔</span>
-            <span className={`px-2 py-0.5 rounded-md font-semibold ${selectedFuncId ? 'bg-amber-200 text-amber-950' : 'bg-white/60 text-slate-400'}`}>
-              {selectedFuncId ? '3. Function Selected' : '3. Pick Function'}
-            </span>
+        {errorFlash && (
+          <div className="mb-4 p-2.5 bg-rose-50 rounded-xl border border-rose-200 text-xs text-rose-700 font-bold text-center animate-bounce">
+            Oops! Those don't match — Try again! 💡
           </div>
-
-          {errorFlash && (
-            <span className="text-rose-600 font-bold animate-bounce">
-              Oops! Those don't match — Try again! 💡
-            </span>
-          )}
-        </div>
+        )}
 
         {/* 3 Columns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
