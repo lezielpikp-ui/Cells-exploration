@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { QUIZ_QUESTIONS, QuizQuestion } from '../data/cellData';
 import { sound } from '../utils/audio';
 import { triggerConfetti } from '../utils/confetti';
-import { CheckCircle2, XCircle, RotateCcw, Award, ArrowRight, Sparkles, BookOpen } from 'lucide-react';
+import { CheckCircle2, XCircle, RotateCcw, ArrowRight, Sparkles, BookOpen, Lightbulb } from 'lucide-react';
 
 interface QuizChallengeProps {
   onGoToLearn?: () => void;
@@ -14,42 +14,59 @@ export const QuizChallenge: React.FC<QuizChallengeProps> = ({
   onGoToMatch
 }) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [isAnswered, setIsAnswered] = useState<boolean>(false);
+  const [wrongOptions, setWrongOptions] = useState<string[]>([]);
+  const [isResolved, setIsResolved] = useState<boolean>(false);
+  const [feedback, setFeedback] = useState<{ type: 'correct' | 'try-again'; message: string } | null>(null);
   const [score, setScore] = useState<number>(0);
   const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
   const [answersHistory, setAnswersHistory] = useState<
-    Array<{ questionId: number; selected: string; isCorrect: boolean }>
+    Array<{ questionId: number; question: string; correctAnswer: string; firstTryCorrect: boolean }>
   >([]);
 
   const currentQ: QuizQuestion = QUIZ_QUESTIONS[currentIndex];
-  const isCorrect = selectedOption === currentQ.correctAnswer;
 
   const handleSelectOption = (option: string) => {
-    if (isAnswered) return;
-    setSelectedOption(option);
-    setIsAnswered(true);
+    if (isResolved || wrongOptions.includes(option)) return;
 
-    const correct = option === currentQ.correctAnswer;
-    if (correct) {
+    if (option === currentQ.correctAnswer) {
+      // Correct!
       sound.playSuccess();
-      setScore(prev => prev + 1);
+      setIsResolved(true);
+      const isFirstTry = wrongOptions.length === 0;
+      if (isFirstTry) {
+        setScore(prev => prev + 1);
+      }
+      setFeedback({
+        type: 'correct',
+        message: 'Great job! ✅'
+      });
+      setAnswersHistory(prev => [
+        ...prev,
+        {
+          questionId: currentQ.id,
+          question: currentQ.question,
+          correctAnswer: currentQ.correctAnswer,
+          firstTryCorrect: isFirstTry
+        }
+      ]);
     } else {
+      // Wrong choice - prompt allows instant "Try again"
       sound.playIncorrect();
+      setWrongOptions(prev => [...prev, option]);
+      setFeedback({
+        type: 'try-again',
+        message: `Try again — ${currentQ.nicknameHint} 💡`
+      });
     }
-
-    setAnswersHistory(prev => [
-      ...prev,
-      { questionId: currentQ.id, selected: option, isCorrect: correct }
-    ]);
   };
 
   const handleNext = () => {
     sound.playPop();
     if (currentIndex + 1 < QUIZ_QUESTIONS.length) {
       setCurrentIndex(prev => prev + 1);
-      setSelectedOption(null);
-      setIsAnswered(false);
+      setWrongOptions([]);
+      setIsResolved(false);
+      setFeedback(null);
     } else {
       // Finished quiz!
       setQuizCompleted(true);
@@ -61,29 +78,30 @@ export const QuizChallenge: React.FC<QuizChallengeProps> = ({
   const handleRestart = () => {
     sound.playPop();
     setCurrentIndex(0);
-    setSelectedOption(null);
-    setIsAnswered(false);
+    setWrongOptions([]);
+    setIsResolved(false);
+    setFeedback(null);
     setScore(0);
     setQuizCompleted(false);
     setAnswersHistory([]);
   };
 
-  // Fun score message logic
+  // Fun score message logic matching prompt specifications
   const getScoreMessage = (finalScore: number) => {
     if (finalScore === 8) {
       return {
         title: "8/8 — Wow, Master Cell Biologist! 🌟",
         subtitle: "Incredible job, Scientist! You know every single cell part and nickname like an expert!"
       };
-    } else if (finalScore >= 6) {
+    } else if (finalScore === 7) {
       return {
-        title: `${finalScore}/8 — You’re a Cell Expert! 🎉`,
+        title: "7/8 — You’re a Cell Expert! 🎉",
         subtitle: "Fantastic work! You have mastered cell structures and their awesome nicknames!"
       };
-    } else if (finalScore >= 4) {
+    } else if (finalScore >= 5) {
       return {
-        title: `${finalScore}/8 — Junior Scientist on the Rise! 🔬`,
-        subtitle: "Good effort! A quick look at the Reference Table and you will get a perfect score next time!"
+        title: `${finalScore}/8 — Great Job, Junior Scientist! 🔬`,
+        subtitle: "Super effort! Review the Quick Reference Table to get a perfect 8/8!"
       };
     } else {
       return {
@@ -106,7 +124,7 @@ export const QuizChallenge: React.FC<QuizChallengeProps> = ({
           Test Your Cell Superpowers! ⚡
         </h1>
         <p className="text-slate-600 text-sm mt-1">
-          8 quick questions on cell parts, powerhouse energy, armor, and nicknames!
+          8 multiple-choice questions on cell parts, nicknames, and powerhouses!
         </p>
       </div>
 
@@ -117,7 +135,7 @@ export const QuizChallenge: React.FC<QuizChallengeProps> = ({
           <div className="mb-6">
             <div className="flex items-center justify-between text-xs font-bold text-slate-500 mb-2">
               <span>Question {currentIndex + 1} of {QUIZ_QUESTIONS.length}</span>
-              <span className="text-violet-700">Score: {score}</span>
+              <span className="text-violet-700">First-Try Score: {score} / {currentIndex + (isResolved ? 1 : 0)}</span>
             </div>
             <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
               <div
@@ -137,27 +155,26 @@ export const QuizChallenge: React.FC<QuizChallengeProps> = ({
           {/* Options Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
             {currentQ.options.map((option, idx) => {
-              const isSelectedOption = selectedOption === option;
-              const isCorrectOption = option === currentQ.correctAnswer;
+              const isWrong = wrongOptions.includes(option);
+              const isCorrectAnswer = option === currentQ.correctAnswer;
+              const isShowingCorrect = isResolved && isCorrectAnswer;
 
-              let btnStyle = 'bg-slate-50 border-slate-200 text-slate-800 hover:bg-violet-50 hover:border-violet-300';
+              let btnStyle = 'bg-slate-50 border-slate-200 text-slate-800 hover:bg-violet-50 hover:border-violet-300 cursor-pointer';
 
-              if (isAnswered) {
-                if (isCorrectOption) {
-                  btnStyle = 'bg-emerald-100 border-emerald-400 text-emerald-950 font-bold shadow-xs';
-                } else if (isSelectedOption && !isCorrectOption) {
-                  btnStyle = 'bg-rose-100 border-rose-400 text-rose-950 font-bold';
-                } else {
-                  btnStyle = 'bg-slate-50 border-slate-200 text-slate-400 opacity-60';
-                }
+              if (isShowingCorrect) {
+                btnStyle = 'bg-emerald-100 border-emerald-400 text-emerald-950 font-bold shadow-xs cursor-default';
+              } else if (isWrong) {
+                btnStyle = 'bg-rose-50 border-rose-300 text-rose-800 line-through opacity-70 cursor-not-allowed';
+              } else if (isResolved) {
+                btnStyle = 'bg-slate-50 border-slate-200 text-slate-400 opacity-60 cursor-default';
               }
 
               return (
                 <button
                   key={idx}
                   onClick={() => handleSelectOption(option)}
-                  disabled={isAnswered}
-                  className={`p-4 rounded-2xl border-2 text-left font-heading text-base font-semibold transition-all cursor-pointer flex items-center justify-between gap-3 ${btnStyle}`}
+                  disabled={isResolved || isWrong}
+                  className={`p-4 rounded-2xl border-2 text-left font-heading text-base font-semibold transition-all flex items-center justify-between gap-3 ${btnStyle}`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-7 h-7 rounded-xl bg-white/80 border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
@@ -166,11 +183,11 @@ export const QuizChallenge: React.FC<QuizChallengeProps> = ({
                     <span>{option}</span>
                   </div>
 
-                  {isAnswered && isCorrectOption && (
+                  {isShowingCorrect && (
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                   )}
-                  {isAnswered && isSelectedOption && !isCorrectOption && (
-                    <XCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                  {isWrong && (
+                    <XCircle className="w-5 h-5 text-rose-500 shrink-0" />
                   )}
                 </button>
               );
@@ -178,38 +195,38 @@ export const QuizChallenge: React.FC<QuizChallengeProps> = ({
           </div>
 
           {/* Instant Feedback Callout */}
-          {isAnswered && (
+          {feedback && (
             <div className={`p-4 rounded-2xl border-2 mb-6 animate-pulse-subtle ${
-              isCorrect
+              feedback.type === 'correct'
                 ? 'bg-emerald-50 border-emerald-300 text-emerald-950'
                 : 'bg-amber-50 border-amber-300 text-amber-950'
             }`}>
               <div className="flex items-start gap-3">
                 <span className="text-2xl shrink-0">
-                  {isCorrect ? '✅' : '💡'}
+                  {feedback.type === 'correct' ? '✅' : '💡'}
                 </span>
                 <div>
                   <div className="font-heading font-extrabold text-base">
-                    {isCorrect
-                      ? 'Great job! ✅'
-                      : `Try again — ${currentQ.nicknameHint}`}
+                    {feedback.message}
                   </div>
                   <div className="text-xs sm:text-sm mt-1 text-slate-700">
-                    {currentQ.explanation}
+                    {feedback.type === 'correct'
+                      ? currentQ.explanation
+                      : 'Pick another choice above to discover the correct cell part!'}
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Bottom Next Button */}
-          {isAnswered && (
+          {/* Bottom Next Button (Enabled when question is resolved) */}
+          {isResolved && (
             <div className="flex justify-end">
               <button
                 onClick={handleNext}
                 className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-heading font-bold text-base rounded-2xl shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
               >
-                <span>{currentIndex + 1 === QUIZ_QUESTIONS.length ? 'See Final Score' : 'Next Question'}</span>
+                <span>{currentIndex + 1 === QUIZ_QUESTIONS.length ? 'See Final Score 🎉' : 'Next Question ➔'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -244,7 +261,7 @@ export const QuizChallenge: React.FC<QuizChallengeProps> = ({
           {/* Quick Review List */}
           <div className="text-left bg-slate-50 rounded-2xl p-4 sm:p-6 mb-8 border border-slate-200 max-h-60 overflow-y-auto">
             <h3 className="font-heading text-sm font-bold text-slate-800 mb-3 uppercase tracking-wider">
-              Quick Review:
+              Question Summary:
             </h3>
             <div className="space-y-2">
               {QUIZ_QUESTIONS.map(q => {
@@ -252,10 +269,10 @@ export const QuizChallenge: React.FC<QuizChallengeProps> = ({
                 return (
                   <div key={q.id} className="flex items-center justify-between text-xs py-1.5 border-b border-slate-200/60 last:border-none">
                     <span className="font-medium text-slate-700 truncate pr-2">
-                      {q.id}. {q.correctAnswer} ({q.nicknameHint.replace('it’s the ', '').replace('!', '')})
+                      {q.id}. {q.correctAnswer} — <span className="text-slate-500 font-normal">{q.explanation}</span>
                     </span>
-                    <span className={`font-bold shrink-0 ${hist?.isCorrect ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {hist?.isCorrect ? 'Correct ✅' : 'Review 💡'}
+                    <span className={`font-bold shrink-0 ${hist?.firstTryCorrect ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {hist?.firstTryCorrect ? 'First Try ✅' : 'Learned 💡'}
                     </span>
                   </div>
                 );
